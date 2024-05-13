@@ -33,7 +33,13 @@ For Linux bash shell users (untested):
 
 `docker run -d --name larissa-node-instance -v ${PWD}/.ethereum:/app/.ethereum -e LARISSA_NODE_USER_KEY="YourUserKeyHere" -p 30303:30303 larissa-node`
 
-### Donations are never required but always appreciated
-However, if you benefit from this information and wish to say thank you, I don't mind if you send a little LRS to my wallet: 0xc6E52ef89173a3655DcF0aCd51e5fB45E0dF9674
-If you want to use my referral code when purchasing nodes: C9S1X4-7669
+## Data Persistence
+
+Once your node is created, the running container will utilize a `.ethereum` subfolder within the folder you created for persistent data storage. This folder is where the node stores its operational data. In theory, if the container needs to be rebuilt, it can resume operations using the data from this folder, ensuring continuity without data loss.
+
+### Donations and Referrals
+
+While donations are never required, they are always appreciated if you find this information useful. If you wish to express gratitude, you can send LRS to my wallet at: `0xc6E52ef89173a3655DcF0aCd51e5fB45E0dF9674`.
+
+Additionally, if you are considering purchasing nodes and would like to use my referral code, here it is: `C9S1X4-7669`. Your support helps sustain and improve this project.
 
