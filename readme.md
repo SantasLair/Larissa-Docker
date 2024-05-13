@@ -7,7 +7,7 @@ You should have a basic understanding of Docker. This setup was tested using Doc
 ## Creating a Docker Image
 
 1. Create a work folder.
-2. Downlaod the Linux version of Larissa node (geth-ubuntu-x86_64) and place it in the work folder.
+2. Downlaod the Linux version of Larissa node (geth-ubuntu-x86_64) and place it in the work folder. (from here https://github.com/LarissaBlockchain/Core/releases)
 3. Place the dockerfile from this repository in the work folder.
 4. Build a docker image be executing the following command in that folder:
 
