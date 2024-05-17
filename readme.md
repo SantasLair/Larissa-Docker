@@ -1,6 +1,10 @@
 # Larissa Node Dockerfile
 This project contains a Dockerfile for setting up a Larissa node inside a Docker container. This guide is based on my personal experience and is intended as a starting point. It might not address all potential issues, and I encourage community contributions to enhance this setup.
 
+## Contributors
+- [Santa](https://github.com/Santas-Lair) - Project creator and main developer
+- Special thanks to **dark_knight0257** from the [Larissa Discord Server](https://discord.gg/cajyAG6688) for their invaluable contributions and support in the development of this project.
+
 ## Prerequsites
 You should have a basic understanding of Docker. This setup was tested using Docker Desktop for Windows and has not been tried in other environments.
 
