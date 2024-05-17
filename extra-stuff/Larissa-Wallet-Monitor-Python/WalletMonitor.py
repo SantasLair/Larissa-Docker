@@ -2,13 +2,7 @@ import aiohttp
 import asyncio
 import datetime
 import os
-import logging
-import json
-import sqlite3
 from termcolor import colored
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class WalletStat:
     def __init__(self, wallet_id):
@@ -30,6 +24,7 @@ class WalletStat:
         self.previous_earning = self.current_earning
         self.current_earning = new_earning
 
+
     def display_earnings(self):
         if self.gain_amount == 0:
             print(f"WalletID {self.wallet_id}: {self.current_earning:.4f}")
@@ -42,34 +37,16 @@ class WalletStat:
 
 
 class WalletStats:
-    def __init__(self, config_file):
+    def __init__(self, filename, token):
         self.wallets = {}
-        self.load_config(config_file)
-        self.conn = sqlite3.connect('earnings.db')
-        self.create_table()
+        self.load_wallets(filename)
+        self.token = token
 
-    def load_config(self, config_file):
-        try:
-            with open(config_file, 'r') as file:
-                config = json.load(file)
-                self.token = config["bearer_token"]
-                for wallet_id in config["wallet_ids"]:
-                    self.wallets[wallet_id] = WalletStat(wallet_id)
-            logging.info(f"Loaded {len(self.wallets)} wallet IDs from {config_file}")
-        except FileNotFoundError:
-            logging.error(f"Config file {config_file} not found")
-        except json.JSONDecodeError:
-            logging.error(f"Error parsing config file {config_file}")
-
-    def create_table(self):
-        with self.conn:
-            self.conn.execute('''CREATE TABLE IF NOT EXISTS earnings
-                                 (wallet_id TEXT, timestamp TEXT, earnings REAL)''')
-
-    def save_earnings(self, wallet_id, earnings):
-        with self.conn:
-            self.conn.execute('INSERT INTO earnings (wallet_id, timestamp, earnings) VALUES (?, ?, ?)',
-                              (wallet_id, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), earnings))
+    def load_wallets(self, filename):
+        with open(filename, 'r') as file:
+            for line in file:
+                if line.strip():
+                    self.wallets[line.strip()] = WalletStat(line.strip())
 
     def clear_screen(self):
         if os.name == 'nt':
@@ -82,20 +59,16 @@ class WalletStats:
         headers = {"Authorization": f"Bearer {self.token}"}
         body = {"walletID": wallet_stat.wallet_id}
 
-        try:
-            async with session.post(url, headers=headers, json=body) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    if data['status']:
-                        return float(data['data'])
-                    else:
-                        logging.warning(f"Failed for walletID {wallet_stat.wallet_id}: {data['message']}")
+        async with session.post(url, headers=headers, json=body) as response:
+            if response.status == 200:
+                data = await response.json()
+                if data['status']:
+                    return float(data['data'])
                 else:
-                    logging.error(f"Failed for walletID {wallet_stat.wallet_id} with status code: {response.status}")
-        except aiohttp.ClientError as e:
-            logging.error(f"Network error for walletID {wallet_stat.wallet_id}: {e}")
-
-        return None
+                    print(f"Failed for walletID {wallet_stat.wallet_id}: {data['message']}")
+            else:
+                print(f"Failed for walletID {wallet_stat.wallet_id} with status code:", response.status)
+            return None
 
     async def fetch_wallet_earnings(self, first_run):
         async with aiohttp.ClientSession() as session:
@@ -110,5 +83,21 @@ class WalletStats:
                 if current_earning is not None:
                     wallet_stat.update_earnings(current_earning)
                     wallet_stat.display_earnings()
-                    self.save_earnings(wallet_stat.wallet_id, current_earning)
-                    total += current_
+                    total += current_earning
+
+            print(f"Total unclaimed earnings: {total:.4f}\n")
+            return first_run
+
+    async def run(self):
+        first_run = True
+        while True:
+            first_run = await self.fetch_wallet_earnings(first_run)
+            first_run = False
+
+            # tweak this as you like... 2 minutes is default (a safe value).  Making this number too small may risk a ban.
+            await asyncio.sleep(600) # wait for 2 minutes, then update again
+
+if __name__ == "__main__":
+    token = "Your Bearer Token goes HERE"  # Replace with your actual token
+    stats = WalletStats('wallet_ids.csv', token)
+    asyncio.run(stats.run())
