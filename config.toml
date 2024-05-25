@@ -1,3 +1,11 @@
+# Larissa Node Configuration
+
+[Eth]
+# Config for Larissa Mainnet
+SyncMode = "snap"
+NoPruning = false
+NoPrefetch = false
+
 [Node.P2P]
 # Peer-to-peer configurations
 MaxPeers = 15
